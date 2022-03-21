@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add `edge_propagator_ack`: Edge/pulse propagator with sender-synchronous receive-acknowledge
   output.  `edge_propagator` is now implemented by instantiating `edge_propagator_ack`.
+- Add `clk_int_div` arbitrary integer clock divider with *at-runtime*
+  configurable divider selection and glitch-free, 50%duty cycle output clock.
+
+### Changed
+- Deprecated flawed `clk_div` module and add elaboration warning message that
+  will be shown for existing designs (can be disabled with optional
+  instantiation parameter).
 
 ### Fixed
 - Correct reset polarity in assertions in `isochronous_4phase_handshake` and `isochronous_spill_register`
