@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Add `edge_propagator_ack`: Edge/pulse propagator with sender-synchronous receive-acknowledge
   output.  `edge_propagator` is now implemented by instantiating `edge_propagator_ack`.
+- Add an assertion to the `lzc` to verify parameters.
 
 ### Fixed
 - Correct reset polarity in assertions in `isochronous_4phase_handshake` and `isochronous_spill_register`
