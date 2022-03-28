@@ -30,6 +30,8 @@
 // `FFLSR:   load-enable and synchronous active-high reset
 // `FFLSRN:  load-enable and synchronous active-low reset
 // `FFLNR:   load-enable without reset
+// `FFASR:   both asynchronous and synchronous active-high reset
+// `FFASRN:  both asynchronous and synchronous active-low reset
 
 `ifdef VERILATOR
 `define NO_SYNOPSYS_FF 1
@@ -217,5 +219,24 @@
   always_ff @(posedge (__clk)) begin   \
     __q <= (__load) ? (__d) : (__q);   \
   end
+
+
+// Flip-flop with both synchronous and asynchronous active-low reset
+// __q: Q output of FF
+// __d: D input of FF
+// __areset_value: reset value for async reset
+// __sreset_value: reset value for sync reset
+// __arst_n: asynchronous reset, active-low
+// __srst_n: synchronous reset, active-low
+// __clk: clock input
+`define FFASRN(__q, __d, __areset_value, __sreset_value, __clk = `REG_DFLT_CLK, __arst_n = `REG_DFLT_RST, __srst_n) \
+  always_ff @(posedge (_clk) or negedge (__arst_n)) begin  \
+    if (!__arst_n) begin                                   \
+      __q <= (__areset_value);                             \
+    end else begin                                         \
+      __q = __srst_n ? __sreset_value : __d;               \
+    end                                                    \
+  end 
+
 
 `endif
