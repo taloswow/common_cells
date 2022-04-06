@@ -109,23 +109,11 @@ module fifo_v3 #(
     end
 
     // sequential process
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            read_pointer_q  <= '0;
-            write_pointer_q <= '0;
-            status_cnt_q    <= '0;
-        end else begin
-            if (flush_i) begin
-                read_pointer_q  <= '0;
-                write_pointer_q <= '0;
-                status_cnt_q    <= '0;
-             end else begin
-                read_pointer_q  <= read_pointer_n;
-                write_pointer_q <= write_pointer_n;
-                status_cnt_q    <= status_cnt_n;
-            end
-        end
-    end
+    logic reset_pointers;
+    assign reset_pointers = flush_i | clr_i;
+    `FFC(read_pointer_q, read_pointer_n, '0, clk_i, rst_ni, reset_pointers)
+    `FFC(write_pointer_q, write_pointer_n, '0, clk_i, rst_ni, reset_pointers)
+    `FFC(status_cnt_q, status_cnt_n, '0, clk_i, rst_ni, reset_pointers)
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
         if(~rst_ni) begin
