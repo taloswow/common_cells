@@ -10,6 +10,8 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+
 module fifo_v3 #(
     parameter bit          FALL_THROUGH = 1'b0, // fifo is in fall-through mode
     parameter int unsigned DATA_WIDTH   = 32,   // default data width if the fifo is of type logic
@@ -20,6 +22,7 @@ module fifo_v3 #(
 )(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
+    input  logic  clr_i,            // Synchronous clear active high
     input  logic  flush_i,          // flush the queue
     input  logic  testmode_i,       // test_mode to bypass clock gating
     // status flags
@@ -114,14 +117,7 @@ module fifo_v3 #(
     `FFC(read_pointer_q, read_pointer_n, '0, clk_i, rst_ni, reset_pointers)
     `FFC(write_pointer_q, write_pointer_n, '0, clk_i, rst_ni, reset_pointers)
     `FFC(status_cnt_q, status_cnt_n, '0, clk_i, rst_ni, reset_pointers)
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if(~rst_ni) begin
-            mem_q <= '0;
-        end else if (!gate_clock) begin
-            mem_q <= mem_n;
-        end
-    end
+    `FFCIL(mem_q, mem_n, '0, clk_i, rst_ni, clr_i, !gate_clock)
 
 // pragma translate_off
 `ifndef VERILATOR
