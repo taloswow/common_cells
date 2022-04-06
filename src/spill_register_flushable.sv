@@ -11,6 +11,7 @@
 //
 // Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
 
 /// A register with handshakes that completely cuts any combinational paths
 /// between the input and output. This spill register can be flushed.
@@ -20,6 +21,7 @@ module spill_register_flushable #(
 ) (
   input  logic clk_i   ,
   input  logic rst_ni  ,
+  input  logic clr_i   ,
   input  logic valid_i ,
   input  logic flush_i ,
   output logic ready_o ,
@@ -39,38 +41,18 @@ module spill_register_flushable #(
     logic a_full_q;
     logic a_fill, a_drain;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_data
-      if (!rst_ni)
-        a_data_q <= '0;
-      else if (a_fill)
-        a_data_q <= data_i;
-    end
+    `FFCIL(a_data_q, data_i, '0, clk_i, rst_ni, clr_i, a_fill)
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_a_full
-      if (!rst_ni)
-        a_full_q <= 0;
-      else if (a_fill || a_drain)
-        a_full_q <= a_fill;
-    end
+    `FFCIL(a_full_q, a_fill, 0, clk_i, rst_ni, clr_i, (a_fill || a_drain))
 
     // The B register.
     T b_data_q;
     logic b_full_q;
     logic b_fill, b_drain;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_data
-      if (!rst_ni)
-        b_data_q <= '0;
-      else if (b_fill)
-        b_data_q <= a_data_q;
-    end
+    `FFCIL(b_data_q, a_data_q, '0, clk_i, rst_ni, clr_i, b_fill)
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin : ps_b_full
-      if (!rst_ni)
-        b_full_q <= 0;
-      else if (b_fill || b_drain)
-        b_full_q <= b_fill;
-    end
+    `FFCIL(b_full_a, b_fill, 0, clk_i, rst_ni, clr_i, (b_fill || b_drain))
 
     // Fill the A register when the A or B register is empty. Drain the A register
     // whenever it is full and being filled, or if a flush is requested.
