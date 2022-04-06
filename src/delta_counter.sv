@@ -16,7 +16,8 @@ module delta_counter #(
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             clear_i, // synchronous clear
+    input  logic             clear_i, // synchronous clear for logic
+    input  logic             clr_i,   // synchronous clear for registers
     input  logic             en_i,    // enable the counter
     input  logic             load_i,  // load a new value
     input  logic             down_i,  // downcount, default is up
@@ -28,7 +29,7 @@ module delta_counter #(
     logic [WIDTH:0] counter_q, counter_d;
     if (STICKY_OVERFLOW) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
-        always_ff @(posedge clk_i or negedge rst_ni) overflow_q <= ~rst_ni ? 1'b0 : overflow_d;
+        `FFC(overflow_q, overflow_d, 1'b0, clk_i, rst_ni, clr_i)
         always_comb begin
             overflow_d = overflow_q;
             if (clear_i || load_i) begin
@@ -64,11 +65,5 @@ module delta_counter #(
         end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-           counter_q <= '0;
-        end else begin
-           counter_q <= counter_d;
-        end
-    end
+    `FFC(counter_q, counter_d, '0, clk_i, rst_ni, clr_i)
 endmodule
