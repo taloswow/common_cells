@@ -20,7 +20,8 @@
 // `FF:      asynchronous active-low reset
 // `FFAR:    asynchronous active-high reset
 // `FFARN:   [deprecated] asynchronous active-low reset
-// `FFARC:   asynchronous active-high reset with synchronous active-high clear
+// `FFC:     asynchronous active-low reset with synchronous active-high clear
+// `FFCIL:   asynchronous active-low reset with synchronous active-high clear, working as an inferred latch
 // `FFSR:    synchronous active-high reset
 // `FFSRN:   synchronous active-low reset
 // `FFNR:    without reset
@@ -96,6 +97,22 @@
     end                                                             \
   end
 
+// Flip-Flop with asynchronous active-low reset and synchronous clear
+// __q: Q output of FF
+// __d: D input of FF
+// __reset_value: value assigned upon reset
+// __clk: clock input
+// __arst_n: asynchronous reset, active-low
+// __clr: synchronous clear, active high
+// __il: inferred latch signal
+`define FFCIL(__q, __d, __reset_value, __clk, __arst_n, __clr, __il)\
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin          \
+    if (!__arst_n) begin                                            \
+      __q <= (__reset_value);                                       \
+    end else if (__il) begin                                                  \
+      __q <= (__clr) ? (__reset_value) : (__d);                     \
+    end                                                             \
+  end
 
 // Flip-Flop with synchronous active-high reset
 // __q: Q output of FF
