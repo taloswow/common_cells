@@ -13,6 +13,8 @@
 //
 // Description: Simple shift register for arbitrary depth and types
 
+`include "common_cells/registers.svh"
+
 module shift_reg #(
     parameter type dtype         = logic,
     parameter int unsigned Depth = 1
@@ -28,26 +30,14 @@ module shift_reg #(
         assign d_o = d_i;
     // register of depth 1 is a simple register
     end else if (Depth == 1) begin : gen_register
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (~rst_ni) begin
-                d_o <= '0;
-            end else begin
-                d_o <= d_i;
-            end
-        end
+        `FFC(d_o, d_i, '0, clk_i, rst_ni, clr_i)
     // if depth is greater than 1 it becomes a shift register
     end else if (Depth > 1) begin : gen_shift_reg
         dtype [Depth-1:0] reg_d, reg_q;
         assign d_o = reg_q[Depth-1];
         assign reg_d = {reg_q[Depth-2:0], d_i};
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (~rst_ni) begin
-                reg_q <= '0;
-            end else begin
-                reg_q <= reg_d;
-            end
-        end
+        `FFC(reg_q, reg_d, '0, clk_i, rst_ni, clr_i)
     end
 
 endmodule
