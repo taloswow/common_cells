@@ -11,6 +11,8 @@
 // Author: Florian Zaruba, zarubaf@iis.ee.ethz.ch
 // Description: Delay (or randomize) AXI-like handshaking
 
+`include "common_cells/registers.svh"
+
 module stream_delay #(
     parameter bit   StallRandom = 0,
     parameter int   FixedDelay  = 1,
@@ -18,6 +20,7 @@ module stream_delay #(
 )(
     input  logic     clk_i,
     input  logic     rst_ni,
+    input  logic     clr_i,
 
     input  payload_t payload_i,
     output logic     ready_o,
@@ -96,11 +99,12 @@ module stream_delay #(
             lfsr_16bit #(
               .WIDTH ( 16 )
             ) i_lfsr_16bit (
-                .clk_i          ( clk_i        ),
-                .rst_ni         ( rst_ni       ),
-                .en_i           ( load         ),
-                .refill_way_oh  (              ),
-                .refill_way_bin ( counter_load )
+              .clk_i          ( clk_i        ),
+              .rst_ni         ( rst_ni       ),
+	      .clr_i          ( clr_i        ),
+              .en_i           ( load         ),
+              .refill_way_oh  (              ),
+              .refill_way_bin ( counter_load )
             );
         end else begin : gen_fixed_delay
             assign counter_load = FixedDelay;
@@ -111,7 +115,7 @@ module stream_delay #(
         ) i_counter (
             .clk_i      ( clk_i        ),
             .rst_ni     ( rst_ni       ),
-            .clear_i    ( 1'b0         ),
+            .clear_i    ( clr_i        ),
             .en_i       ( en           ),
             .load_i     ( load         ),
             .down_i     ( 1'b1         ),
@@ -120,13 +124,7 @@ module stream_delay #(
             .overflow_o (              )
         );
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin
-            if (~rst_ni) begin
-                state_q <= Idle;
-            end else begin
-                state_q <= state_d;
-            end
-        end
+	`FFC(state_q, state_d, Idle, clk_i, rst_ni, clr_i)
     end
 
 endmodule
