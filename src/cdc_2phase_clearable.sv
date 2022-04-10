@@ -167,6 +167,8 @@ module cdc_2phase_clearable #(
       s_src_clear_ack_q   <= s_src_clear_req;
     end
   end
+  `FFC(s_src_isolate_ack_q, s_src_isolate_req. 1'b0, src_clk_i, src_rst_ni, src_clear_i)
+  `FFC(s_src_clear_ack_q, s_src_clear_req, 1'b0, src_clk_i, src_rst_ni, src_clear_i)
 
   always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
     if (!dst_rst_ni) begin
@@ -177,7 +179,8 @@ module cdc_2phase_clearable #(
       s_dst_clear_ack_q   <= s_dst_clear_req;
     end
   end
-
+  `FFC(s_dst_isolate_ack_q, s_dst_isolate_req, 1'b0, dst_clk_i, dst_rst_ni, dst_clear_i)
+  `FFC(s_dst_clear_ack_q, s_dest_clear_req, 1'b0, dst_clk_i, dst_rst_ni, dst_clear_i)
 
   assign src_clear_pending_o = s_src_isolate_req; // The isolate signal stays
   // asserted during the whole
@@ -223,6 +226,7 @@ module cdc_2phase_src_clearable #(
   ) i_sync(
     .clk_i,
     .rst_ni,
+    .clr_i   ( clear_i     ),
     .serial_i( async_ack_i ),
     .serial_o( ack_synced  )
   );
@@ -241,7 +245,7 @@ module cdc_2phase_src_clearable #(
     end
   end
 
-  `FFNR(data_src_q, data_src_d, clk_i)
+  `FFC(data_src_q, data_src_d, 0, clk_i, 1'b1, clear_i)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -250,6 +254,7 @@ module cdc_2phase_src_clearable #(
       req_src_q  <= req_src_d;
     end
   end
+  `FFC(req_src_q, req_src_d, 0, clk_i, rst_ni, clear_i)
 
   // Output assignments.
   assign ready_o = (req_src_q == ack_synced);
@@ -299,6 +304,7 @@ module cdc_2phase_dst_clearable #(
   ) i_sync(
     .clk_i,
     .rst_ni,
+    .clr_i   ( clear_i     ),
     .serial_i( async_req_i ),
     .serial_o( req_synced  )
   );
@@ -322,19 +328,10 @@ module cdc_2phase_dst_clearable #(
     end
   end
 
-  `FFNR(data_dst_q, data_dst_d, clk_i)
+  `FFC(data_dst_q, data_dst_d, 0, clk_i, 1'b1, clear_i)
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_dst_q     <= 0;
-      req_synced_q1 <= 1'b0;
-    end else begin
-      ack_dst_q     <= ack_dst_d;
-      // The req_synced_q1 is the delayed version of the synchronized req_synced
-      // used to detect transitions in the request.
-      req_synced_q1 <= req_synced;
-    end
-  end
+  `FFC(ack_dst_q, ack_dst_d, 0, clk_i, rst_ni, clear_i)
+  `FFC(req_synced_q1, req_synced, 1'b0, clk_i, rst_ni, clear_i)
 
   // Output assignments.
   assign valid_o = (ack_dst_q != req_synced_q1);
