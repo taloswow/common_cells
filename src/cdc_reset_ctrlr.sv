@@ -106,6 +106,8 @@
 // SPDX-License-Identifier: SHL-0.51
 // -----------------------------------------------------------------------------
 
+`include "common_cells/registers.svh"
+
 module cdc_reset_ctrlr
   import cdc_reset_ctrlr_pkg::*;
  #(
@@ -368,19 +370,16 @@ module cdc_reset_ctrlr_half
     endcase
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      if (CLEAR_ON_ASYNC_RESET) begin
-        initiator_state_q <= ISOLATE; // Start in the ISOLATE state which is
-                                        // the first state of a clear sequence.
-      end else begin
-        initiator_state_q <= IDLE;
-      end
+  initiator_state_e reset_value;
+  always_comb begin
+    if (CLEAR_ON_ASYNC_RESET) begin
+      reset_value = ISOLATE;
     end else begin
-      initiator_state_q <= initiator_state_d;
+      reset_value = IDLE;
     end
   end
-
+  `FFC(initiator_state_q, initiator_state_d, reset_value, clk_i, rst_ni, clear_i)
+  
   // Initiator CDC SRC
   // We use 4 phase handshaking. That way it doesn't matter if one side is
   // sudenly reset asynchronously. With a 2phase CDC, one-sided async resets might
@@ -398,6 +397,7 @@ module cdc_reset_ctrlr_half
   ) i_state_transition_cdc_src(
     .clk_i,
     .rst_ni,
+    .clr_i(clear_i),
     .data_i(initiator_clear_seq_phase),
     .valid_i(initiator_phase_transition_req),
     .ready_o(initiator_phase_transition_ack),
@@ -427,6 +427,7 @@ module cdc_reset_ctrlr_half
   ) i_state_transition_cdc_dst(
     .clk_i,
     .rst_ni,
+    .clr_i(clear_i),
     .data_o(receiver_next_phase),
     .valid_o(receiver_phase_req),
     .ready_i(receiver_phase_ack),
@@ -435,13 +436,7 @@ module cdc_reset_ctrlr_half
     .async_data_i(async_next_phase_i)
   );
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      receiver_phase_q <= CLEAR_PHASE_IDLE;
-    end else if (receiver_phase_req && receiver_phase_ack) begin
-      receiver_phase_q <= receiver_next_phase;
-    end
-  end
+  `FFC(receiver_phase_q, receiver_next_phase, CLEAR_PHASE_IDLE, clk_i, rst_ni, clear_i)
 
   always_comb begin
     receiver_isolate_out = 1'b0;
