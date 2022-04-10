@@ -227,25 +227,11 @@ module cdc_fifo_gray_clearable #(
 
   // Just delay the isolate request by one cycle. We can ensure isolation within
   // one cycle by just deasserting valid and ready signals on both sides of the CDC.
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni) begin
-      s_src_isolate_ack_q <= 1'b0;
-      s_src_clear_ack_q   <= 1'b0;
-    end else begin
-      s_src_isolate_ack_q <= s_src_isolate_req;
-      s_src_clear_ack_q   <= s_src_clear_req;
-    end
-  end
+  `FFC(s_src_isolate_ack_q, s_src_isolate_req, 1'b0, src_clk_i, src_rst_ni, src_clear_i)
+  `FFC(s_src_clear_ack_q, s_src_clear_req, 1'b0, src_clk_i, src_rst_ni, src_clear_i)
 
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni) begin
-      s_dst_isolate_ack_q <= 1'b0;
-      s_dst_clear_ack_q   <= 1'b0;
-    end else begin
-      s_dst_isolate_ack_q <= s_dst_isolate_req;
-      s_dst_clear_ack_q   <= s_dst_clear_req;
-    end
-  end
+  `FFC(s_dst_isolate_ack_q, s_dst_isolate_req, 1'b0, dst_clk_i, dst_rst_ni, dst_clear_i)
+  `FFC(s_dst_clear_ack_q, s_dst_clear_req, 1'b0, dst_clk_i, dst_rst_ni, dst_clear_i)
 
 
   assign src_clear_pending_o = s_src_isolate_req; // The isolate signal stays
@@ -292,8 +278,8 @@ module cdc_fifo_gray_src_clearable #(
   // Data FIFO.
   assign async_data_o = data_q;
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_word
-    `FFLNR(data_q[i], src_data_i,
-          src_valid_i & src_ready_o & (wptr_bin[LOG_DEPTH-1:0] == i), src_clk_i)
+    `FFLC(data_q[i], src_data_i, '0, src_clk_i, 1'b1, clr_i,
+          (src_valid_i & src_ready_o & (wptr_bin[LOG_DEPTH-1:0] == i)))
   end
 
   // Read pointer.
@@ -301,6 +287,7 @@ module cdc_fifo_gray_src_clearable #(
     sync #(.STAGES(SYNC_STAGES)) i_sync (
       .clk_i    ( src_clk_i       ),
       .rst_ni   ( src_rst_ni      ),
+      .clr_i    ( src_clr_i       ),
       .serial_i ( async_rptr_i[i] ),
       .serial_o ( rptr[i]         )
     );
@@ -363,6 +350,7 @@ module cdc_fifo_gray_dst_clearable #(
     sync #(.STAGES(SYNC_STAGES)) i_sync (
       .clk_i    ( dst_clk_i       ),
       .rst_ni   ( dst_rst_ni      ),
+      .clr_i    ( dst_clear_i     ),
       .serial_i ( async_wptr_i[i] ),
       .serial_o ( wptr[i]         )
     );
