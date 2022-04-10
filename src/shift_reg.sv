@@ -21,6 +21,7 @@ module shift_reg #(
 )(
     input  logic clk_i,    // Clock
     input  logic rst_ni,   // Asynchronous reset active low
+    input  logic clr_i,    // Synchronous clear active high
     input  dtype d_i,
     output dtype d_o
 );
