@@ -10,12 +10,15 @@
 
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+
 module mv_filter #(
     parameter int unsigned WIDTH     = 4,
     parameter int unsigned THRESHOLD = 10
 )(
     input  logic clk_i,
     input  logic rst_ni,
+    input  logic clr_i,
     input  logic sample_i,
     input  logic clear_i,
     input  logic d_i,
@@ -43,13 +46,6 @@ module mv_filter #(
         end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            counter_q <= '0;
-            q         <= 1'b0;
-        end else begin
-            counter_q <= counter_d;
-            q         <= d;
-        end
-    end
+    `FFC(counter_q, counter_d, '0, clk_i, rst_ni, clr_i)
+    `FFC(q, d, 1'b0, clk_i, rst_ni, clr_i)
 endmodule
