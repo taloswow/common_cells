@@ -10,6 +10,8 @@
 
 // Up/down counter that tracks its maximum value
 
+`include "common_cells/registers.svh"
+
 module max_counter #(
     parameter int unsigned WIDTH = 4
 ) (
@@ -64,14 +66,7 @@ module max_counter #(
 
     assign overflow_max_o = overflow_max_q;
 
-    always_ff @(posedge clk_i, negedge rst_ni) begin
-        if (!rst_ni) begin
-           max_q <= '0;
-           overflow_max_q <= 1'b0;
-        end else begin
-           max_q <= max_d;
-           overflow_max_q <= overflow_max_d;
-        end
-    end
+    `FFC(max_q, max_d, '0, clk_i, rst_ni, clear_i)
+    `FFC(overflow_max_q, overflow_max_d, 1'b0, clk_i, rst_ni, clear_i)
 
 endmodule
