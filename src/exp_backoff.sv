@@ -20,6 +20,8 @@
 // a successful trial (clr_i).
 //
 
+`include "common_cells/registers.svh"
+
 module exp_backoff #(
   /// Seed for 16bit LFSR
   parameter int unsigned Seed   = 'hffff,
@@ -28,6 +30,7 @@ module exp_backoff #(
 ) (
   input  logic clk_i,
   input  logic rst_ni,
+  input  logic clr_i,
   /// Sets the backoff counter (pulse) -> use when trial did not succeed
   input  logic set_i,
   /// Clears the backoff counter (pulse) -> use when trial succeeded
@@ -65,17 +68,9 @@ module exp_backoff #(
 
   assign is_zero_o = (cnt_q=='0);
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
-    if (!rst_ni) begin
-      lfsr_q <= WIDTH'(Seed);
-      mask_q <= '0;
-      cnt_q  <= '0;
-    end else begin
-      lfsr_q <= lfsr_d;
-      mask_q <= mask_d;
-      cnt_q  <= cnt_d;
-    end
-  end
+  `FFC(lfsr_q, lfsr_d, WIDTH'(Seed), clk_i, rst_ni, clr_i)
+  `FFC(mask_q, mask_d, '0, clk_i, rst_ni, clr_i)
+  `FFC(cnt_q, cnt_d, '0, clk_i, rst_ni, clr_i)
 
 ///////////////////////////////////////////////////////
 // assertions
