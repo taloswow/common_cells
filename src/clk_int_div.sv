@@ -53,6 +53,8 @@
 // SPDX-License-Identifier: SHL-0.51
 // -----------------------------------------------------------------------------
 
+`include "common_cells/registers.svh"
+
 module clk_int_div #(
   /// The with
   parameter int unsigned DIV_VALUE_WIDTH = 4,
@@ -67,6 +69,7 @@ module clk_int_div #(
   /// enable signal may be driven by combinational logic without introducing
   /// glitches.
   input logic                        en_i,
+  input logic                        clr_i,
   /// If asserted (active-high) bypass the clock divider and drive clk_o
   /// directly with clk_i.
   input logic                        test_mode_en_i,
@@ -198,21 +201,11 @@ module clk_int_div #(
   localparam logic UseOddDivisionResetValue = DEFAULT_DIV_VALUE[0];
   localparam logic ClkDivBypassEnResetValue = (DEFAULT_DIV_VALUE < 2)? 1'b1: 1'b0;
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      use_odd_division_q  <= UseOddDivisionResetValue;
-      clk_div_bypass_en_q <= ClkDivBypassEnResetValue;
-      div_q               <= DEFAULT_DIV_VALUE;
-      clk_gate_state_q    <= IDLE;
-      gate_en_q           <= ENABLE_CLOCK_IN_RESET;
-    end else begin
-      use_odd_division_q  <= use_odd_division_d;
-      clk_div_bypass_en_q <= clk_div_bypass_en_d;
-      div_q               <= div_d;
-      clk_gate_state_q    <= clk_gate_state_d;
-      gate_en_q           <= gate_en_d;
-    end
-  end
+  `FFC(use_odd_division_q, use_odd_division_d, UseOddDivisionResetValue, clk_i, rst_ni, clr_i)
+  `FFC(clk_div_bypass_en_q, clk_div_bypass_en_d, ClkDivBypassEnResetValue, clk_i, rst_ni, clr_i)
+  `FFC(div_q, div_d, DEFAULT_DIV_VALUE, clk_i, rst_ni, clr_i)
+  `FFC(clk_gate_state_q, clk_gate_state_d, IDLE, clk_i, rst_ni, clr_i)
+  `FFC(gate_en_q, gate_en_d, ENABLE_CLOCK_IN_RESET, clk_i, rst_ni, clr_i)
 
   //---------------------- Cycle Counter ----------------------
 
@@ -236,13 +229,7 @@ module clk_int_div #(
     end
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      cycle_cntr_q <= '0;
-    end else begin
-      cycle_cntr_q <= cycle_cntr_d;
-    end
-  end
+  `FFC(cycle_cntr_q, cycle_cntr_d, '0, clk_i, rst_ni, clr_i)
 
   assign cycl_count_o = cycle_cntr_q;
 
