@@ -97,19 +97,20 @@
     end                                                             \
   end
 
-// Flip-Flop with asynchronous active-low reset and synchronous clear
+// Flip-Flop with asynchronous active-low reset, synchronous clear and
+// load-enable
 // __q: Q output of FF
 // __d: D input of FF
 // __reset_value: value assigned upon reset
 // __clk: clock input
 // __arst_n: asynchronous reset, active-low
 // __clr: synchronous clear, active high
-// __il: inferred latch signal
-`define FFCIL(__q, __d, __reset_value, __clk, __arst_n, __clr, __il)\
+// __en: load enable signal
+`define FFLC(__q, __d, __reset_value, __clk, __arst_n, __clr, __en) \
   always_ff @(posedge (__clk) or negedge (__arst_n)) begin          \
     if (!__arst_n) begin                                            \
       __q <= (__reset_value);                                       \
-    end else if (__il) begin                                                  \
+    end else if (__en) begin                                        \
       __q <= (__clr) ? (__reset_value) : (__d);                     \
     end                                                             \
   end

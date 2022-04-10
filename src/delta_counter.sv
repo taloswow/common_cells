@@ -10,6 +10,8 @@
 
 // Up/down counter with variable delta
 
+`include "common_cells/registers.svh"
+
 module delta_counter #(
     parameter int unsigned WIDTH = 4,
     parameter bit STICKY_OVERFLOW = 1'b0
