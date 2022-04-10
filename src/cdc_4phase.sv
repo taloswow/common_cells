@@ -32,6 +32,9 @@
 ///
 /// CONSTRAINT: Requires max_delay of min_period(src_clk_i, dst_clk_i) through
 /// the paths async_req, async_ack, async_data.
+
+`include "common_cells/register.svh"
+
 /* verilator lint_off DECLFILENAME */
 module cdc_4phase #(
   parameter type T = logic,
@@ -41,12 +44,14 @@ module cdc_4phase #(
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
+  input  logic src_clr_i,
   input  T     src_data_i,
   input  logic src_valid_i,
   output logic src_ready_o,
 
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
+  input  logic dst_clr_i,
   output T     dst_data_o,
   output logic dst_valid_o,
   input  logic dst_ready_i
@@ -66,6 +71,7 @@ module cdc_4phase #(
   ) i_src (
     .rst_ni       ( src_rst_ni  ),
     .clk_i        ( src_clk_i   ),
+    .clr_i        ( src_clr_i   ),
     .data_i       ( src_data_i  ),
     .valid_i      ( src_valid_i ),
     .ready_o      ( src_ready_o ),
@@ -78,6 +84,7 @@ module cdc_4phase #(
   cdc_4phase_dst #(.T(T), .DECOUPLED(DECOUPLED)) i_dst (
     .rst_ni       ( dst_rst_ni  ),
     .clk_i        ( dst_clk_i   ),
+    .clr_i        ( dst_clr_i   ),
     .data_o       ( dst_data_o  ),
     .valid_o      ( dst_valid_o ),
     .ready_i      ( dst_ready_i ),
@@ -98,6 +105,7 @@ module cdc_4phase_src #(
 )(
   input  logic rst_ni,
   input  logic clk_i,
+  input  logic clr_i,
   input  T     data_i,
   input  logic valid_i,
   output logic ready_o,
@@ -122,6 +130,7 @@ module cdc_4phase_src #(
   ) i_sync(
     .clk_i,
     .rst_ni,
+    .clr_i,
     .serial_i( async_ack_i ),
     .serial_o( ack_synced  )
   );
@@ -169,29 +178,23 @@ module cdc_4phase_src #(
     endcase
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= IDLE;
+  `FFC(state_q, state_d, IDLE, clk_i, rst_ni, clr_i)
+
+  logic reset_in_req, reset_in_data;
+
+  // Sample the data and the request signal to filter combinational glitches
+  always_comb begin
+    if (SEND_RESET_MSG) begin
+      reset_in_req  <= 1'b1;
+      reset_in_data <= RESET_MSG;
     end else begin
-      state_q <= state_d;
+      reset_in_req  <= 1'b0;
+      reset_in_data <= T'('0);
     end
   end
 
-  // Sample the data and the request signal to filter combinational glitches
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      if (SEND_RESET_MSG) begin
-        req_src_q  <= 1'b1;
-        data_src_q <= RESET_MSG;
-      end else begin
-        req_src_q  <= 1'b0;
-        data_src_q <= T'('0);
-      end
-    end else begin
-      req_src_q  <= req_src_d;
-      data_src_q <= data_src_d;
-    end
-  end
+  `FFC(req_src_q, req_src_d, reset_in_req, clk_i, rst_ni, clr_i)
+  `FFC(data_src_q, data_src_d, reset_in_data, clk_i, rst_ni, clr_i)
 
   // Async output assignments.
   assign async_req_o = req_src_q;
@@ -209,6 +212,7 @@ module cdc_4phase_dst #(
 )(
   input  logic rst_ni,
   input  logic clk_i,
+  input  logic clr_i,
   output T     data_o,
   output logic valid_o,
   input  logic ready_i,
@@ -236,6 +240,7 @@ module cdc_4phase_dst #(
   ) i_sync(
     .clk_i,
     .rst_ni,
+    .clr_i,
     .serial_i( async_req_i ),
     .serial_o( req_synced  )
   );
@@ -281,22 +286,10 @@ module cdc_4phase_dst #(
     endcase
   end
 
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      state_q <= IDLE;
-    end else begin
-      state_q <= state_d;
-    end
-  end
+  `FFC(state_q, state_d, IDLE, clk_i, rst_ni, clr_i)
 
   // Filter glitches on ack signal before sending it through the asynchronous channel
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_dst_q <= 1'b0;
-    end else begin
-      ack_dst_q <= ack_dst_d;
-    end
-  end
+  `FFC(ack_dst_q, ack_dst_d, 1'b0, clk_i, rst_ni, clr_i)
 
   if (DECOUPLED) begin : gen_decoupled
     // Decouple the output from the asynchronous data bus without introducing
@@ -307,6 +300,7 @@ module cdc_4phase_dst #(
     ) i_spill_register (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .valid_i(data_valid),
       .ready_o(output_ready),
       .data_i(async_data_i),
