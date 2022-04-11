@@ -130,7 +130,7 @@ module cdc_2phase_dst #(
 
   // The data_dst register changes when a new data item is presented. This is
   // indicated by the async_req line changing levels.
-  `FFLC(data_dst_q, async_data_i, '0, clk_i, rst_ni, (req_q0 != req_q1 && !valid_o))
+  `FFLC(data_dst_q, async_data_i, '0, clk_i, rst_ni, clr_i, (req_q0 != req_q1 && !valid_o))
 
   // The req_dst and req registers act as synchronization stages.
   `FFC(req_dst_q, async_req_i, 0, clk_i, rst_ni, clr_i)
