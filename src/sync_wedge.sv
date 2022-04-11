@@ -48,5 +48,5 @@ module sync_wedge #(
         .clk_o     ( clk  )
     );
 
-    `FFLC(serial_q, serial, 1'b0, clk, rst_ni, clr_i, en_i)
+    `FFLARNC(serial_q, serial, 1'b0, clk, rst_ni, clr_i, en_i)
 endmodule

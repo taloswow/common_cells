@@ -21,7 +21,6 @@
 // `FFAR:    asynchronous active-high reset
 // `FFARN:   [deprecated] asynchronous active-low reset
 // `FFC:     asynchronous active-low reset with synchronous active-high clear
-// `FFCIL:   asynchronous active-low reset with synchronous active-high clear, working as an inferred latch
 // `FFSR:    synchronous active-high reset
 // `FFSRN:   synchronous active-low reset
 // `FFNR:    without reset
