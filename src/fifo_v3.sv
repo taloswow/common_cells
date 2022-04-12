@@ -117,7 +117,7 @@ module fifo_v3 #(
     `FFC(read_pointer_q, read_pointer_n, '0, clk_i, rst_ni, reset_pointers)
     `FFC(write_pointer_q, write_pointer_n, '0, clk_i, rst_ni, reset_pointers)
     `FFC(status_cnt_q, status_cnt_n, '0, clk_i, rst_ni, reset_pointers)
-    `FFLARNC(mem_q, mem_n, '0, clk_i, rst_ni, clr_i, !gate_clock)
+    `FFLARNC(mem_q, mem_n, !gate_clock, clr_i, '0, clk_i, rst_ni)
 
 // pragma translate_off
 `ifndef VERILATOR
