@@ -113,7 +113,7 @@ module cdc_2phase_src #(
   T data_src_q;
   
   `FFLARNC(req_src_q, ~req_src_q, valid_i && ready_o, clr_i, 0, clk_i, rst_ni)
-  `FFLARNC(data_src_q, data_i, valid_i, && ready_o, clr_i, '0, clk_i, rst_ni)
+  `FFLARNC(data_src_q, data_i, valid_i && ready_o, clr_i, '0, clk_i, rst_ni)
 
   // The ack_src and ack registers act as synchronization stages.
   `FFC(ack_src_q, async_ack_i, 0, clk_i, rst_ni, clr_i)
