@@ -38,7 +38,7 @@ module serial_deglitch #(
 	end
     end
 
-    `FFLARNC(count_q, count_in, '0, clk_i, rst_ni, clr_i, en_i)
+    `FFLARNC(count_q, count_in, en_i, clr_i, '0, clk_i, rst_ni)
     `FFC(q, q, 1'b0, clk_i, rst_ni, clr_i)
 
     // output process

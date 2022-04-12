@@ -93,7 +93,7 @@ module cdc_fifo_2phase #(
   assign fifo_rdata = fifo_data_q[fifo_ridx];
 
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : g_word
-    `FFLARNC(fifo_data_q[i], fifo_wdata, '0, src_clk_i, src_rst_ni, src_clr_i, (fifo_write && fifo_widx == i))
+    `FFLARNC(fifo_data_q[i], fifo_wdata, fifo_write && fifowidx ==i, src_clr_i, '0, src_clk_i, src_rst_ni)
   end
 
   // Allocate the read and write pointers in the source and destination domain.

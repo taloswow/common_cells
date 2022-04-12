@@ -112,8 +112,8 @@ module cdc_2phase_src #(
   (* dont_touch = "true" *)
   T data_src_q;
   
-  `FFLARNC(req_src_q, ~req_src_q, 0, clk_i, rst_ni, clr_i, (valid_i && ready_o))
-  `FFLARNC(data_src_q, data_i, '0, clk_i, rst_ni, clr_i, (valid_i && ready_o))
+  `FFLARNC(req_src_q, ~req_src_q, valid_i && ready_o, clr_i, 0, clk_i, rst_ni)
+  `FFLARNC(data_src_q, data_i, valid_i, && ready_o, clr_i, '0, clk_i, rst_ni)
 
   // The ack_src and ack registers act as synchronization stages.
   `FFC(ack_src_q, async_ack_i, 0, clk_i, rst_ni, clr_i)
@@ -150,11 +150,11 @@ module cdc_2phase_dst #(
   T data_dst_q;
 
   // The ack_dst register changes when a new data item is accepted.
-  `FFLARNC(ack_dst_q, ~ack_dst_q, 0, clk_i, rst_ni, clr_i, (valid_o && ready_i))
+  `FFLARNC(ack_dst_q, ~ack_dst_q, valid_o && ready_i, clr_i, 0, clk_i, rst_ni)
 
   // The data_dst register changes when a new data item is presented. This is
   // indicated by the async_req line changing levels.
-  `FFLARNC(data_dst_q, async_data_i, '0, clk_i, rst_ni, clr_i, (req_q0 != req_q1 && !valid_o))
+  `FFLARNC(data_dst_q, async_data_i, req_q0 != req_q1 && !valid_o, clr_i, '0, clk_i, rst_ni)
 
   // The req_dst and req registers act as synchronization stages.
   `FFC(req_dst_q, async_req_i, 0, clk_i, rst_ni, clr_i)

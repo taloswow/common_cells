@@ -278,8 +278,7 @@ module cdc_fifo_gray_src_clearable #(
   // Data FIFO.
   assign async_data_o = data_q;
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : gen_word
-    `FFLARNC(data_q[i], src_data_i, '0, src_clk_i, 1'b1, clr_i,
-          (src_valid_i & src_ready_o & (wptr_bin[LOG_DEPTH-1:0] == i)))
+    `FFLARNC(data_q[i], src_data_i, (src_valid_i & src_ready_o & (wptr_bin[LOG_DEPTH-1:0] == i)), clr_i, '0, src_clk_i, 1'b1)
   end
 
   // Read pointer.
