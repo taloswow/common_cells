@@ -32,6 +32,7 @@ module counter #(
         .clk_i,
         .rst_ni,
         .clear_i,
+	.clr_i (clear_i),
         .en_i,
         .load_i,
         .down_i,
