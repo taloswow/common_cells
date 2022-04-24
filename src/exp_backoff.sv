@@ -30,7 +30,7 @@ module exp_backoff #(
 ) (
   input  logic clk_i,
   input  logic rst_ni,
-  input  logic clr_i,
+  input  logic clear_i,
   /// Sets the backoff counter (pulse) -> use when trial did not succeed
   input  logic set_i,
   /// Clears the backoff counter (pulse) -> use when trial succeeded
@@ -68,9 +68,9 @@ module exp_backoff #(
 
   assign is_zero_o = (cnt_q=='0);
 
-  `FFC(lfsr_q, lfsr_d, WIDTH'(Seed), clk_i, rst_ni, clr_i)
-  `FFC(mask_q, mask_d, '0, clk_i, rst_ni, clr_i)
-  `FFC(cnt_q, cnt_d, '0, clk_i, rst_ni, clr_i)
+  `FFC(lfsr_q, lfsr_d, WIDTH'(Seed), clk_i, rst_ni, clear_i)
+  `FFC(mask_q, mask_d, '0, clk_i, rst_ni, clear_i)
+  `FFC(cnt_q, cnt_d, '0, clk_i, rst_ni, clear_i)
 
 ///////////////////////////////////////////////////////
 // assertions
