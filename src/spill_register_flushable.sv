@@ -52,7 +52,7 @@ module spill_register_flushable #(
 
     `FFLARNC(b_data_q, a_data_q, b_fill, clr_i, '0, clk_i, rst_ni)
 
-    `FFLARNC(b_full_a, b_fill, b_fill || b_drain, clr_i, 0, clk_i, rst_ni)
+    `FFLARNC(b_full_q, b_fill, b_fill || b_drain, clr_i, 0, clk_i, rst_ni)
 
     // Fill the A register when the A or B register is empty. Drain the A register
     // whenever it is full and being filled, or if a flush is requested.

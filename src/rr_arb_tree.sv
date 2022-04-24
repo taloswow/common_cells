@@ -161,7 +161,7 @@ module rr_arb_tree #(
         assign lock_d     = req_o & ~gnt_i;
         assign req_d      = (lock_q) ? req_q : req_i;
 
-	`FFC(lock_q, lock_d, '0, clk_i, rst_ni, (clear_i || flush_i))
+	`FFC(lock_q, lock_d, '0, clk_i, rst_ni, (clr_i || flush_i))
 
         // pragma translate_off
         `ifndef VERILATOR
