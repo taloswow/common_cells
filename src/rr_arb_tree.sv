@@ -44,6 +44,9 @@
 /// If it is `1'b1` two `lzc`, a masking logic stage and a two input multiplexer are instantiated.
 /// However these are small in respect of the data multiplexers needed, as the width of the `req_i`
 /// signal is usually less as than `DataWidth`.
+
+`include "common_cells/registers.svh"
+
 module rr_arb_tree #(
   /// Number of inputs to be arbitrated.
   parameter int unsigned NumIn      = 64,
@@ -87,6 +90,8 @@ module rr_arb_tree #(
   input  logic                clk_i,
   /// Asynchronous reset, active low.
   input  logic                rst_ni,
+  /// Synchronous clear, active high
+  input  logic                clr_i,
   /// Clears the arbiter state. Only used if `ExtPrio` is `1'b0` or `LockIn` is `1'b1`.
   input  logic                flush_i,
   /// External round-robin priority. Only used if `ExtPrio` is `1'b1.`
@@ -156,17 +161,7 @@ module rr_arb_tree #(
         assign lock_d     = req_o & ~gnt_i;
         assign req_d      = (lock_q) ? req_q : req_i;
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin : p_lock_reg
-          if (!rst_ni) begin
-            lock_q <= '0;
-          end else begin
-            if (flush_i) begin
-              lock_q <= '0;
-            end else begin
-              lock_q <= lock_d;
-            end
-          end
-        end
+	`FFC(lock_q, lock_d, '0, clk_i, rst_ni, (clr_i || flush_i))
 
         // pragma translate_off
         `ifndef VERILATOR
@@ -185,17 +180,7 @@ module rr_arb_tree #(
         `endif
         // pragma translate_on
 
-        always_ff @(posedge clk_i or negedge rst_ni) begin : p_req_regs
-          if (!rst_ni) begin
-            req_q  <= '0;
-          end else begin
-            if (flush_i) begin
-              req_q  <= '0;
-            end else begin
-              req_q  <= req_d;
-            end
-          end
-        end
+	`FFC(req_q, req_d, '0, clk_i, rst_ni, (clr_i || flush_i))
       end else begin : gen_no_lock
         assign req_d = req_i;
       end
@@ -236,17 +221,7 @@ module rr_arb_tree #(
       end
 
       // this holds the highest priority
-      always_ff @(posedge clk_i or negedge rst_ni) begin : p_rr_regs
-        if (!rst_ni) begin
-          rr_q   <= '0;
-        end else begin
-          if (flush_i) begin
-            rr_q   <= '0;
-          end else begin
-            rr_q   <= rr_d;
-          end
-        end
-      end
+      `FFC(rr_q, rr_d, '0, clk_i, rst_ni, (clr_i || flush_i))
     end
 
     assign gnt_nodes[0] = gnt_i;

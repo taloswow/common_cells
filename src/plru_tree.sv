@@ -14,11 +14,14 @@
 // Description: Pseudo Least Recently Used Tree (PLRU)
 // See: https://en.wikipedia.org/wiki/Pseudo-LRU
 
+`include "common_cells/registers.svh"
+
 module plru_tree #(
   parameter int unsigned ENTRIES = 16
 ) (
   input  logic               clk_i,
   input  logic               rst_ni,
+  input  logic               clr_i,
   input  logic [ENTRIES-1:0] used_i, // element i was used (one hot)
   output logic [ENTRIES-1:0] plru_o  // element i is the least recently used (one hot)
 );
@@ -101,13 +104,7 @@ module plru_tree #(
         end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-            plru_tree_q <= '0;
-        end else begin
-            plru_tree_q <= plru_tree_d;
-        end
-    end
+    `FFC(plru_tree_q, plru_tree_d, '0, clk_i, rst_ni, clr_i)
 
 // pragma translate_off
 `ifndef VERILATOR

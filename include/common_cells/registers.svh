@@ -20,6 +20,7 @@
 // `FF:      asynchronous active-low reset
 // `FFAR:    asynchronous active-high reset
 // `FFARN:   [deprecated] asynchronous active-low reset
+// `FFC:     asynchronous active-low reset with synchronous active-high clear
 // `FFSR:    synchronous active-high reset
 // `FFSRN:   synchronous active-low reset
 // `FFNR:    without reset
@@ -30,6 +31,7 @@
 // `FFLSR:   load-enable and synchronous active-high reset
 // `FFLSRN:  load-enable and synchronous active-low reset
 // `FFLNR:   load-enable without reset
+
 
 `ifdef VERILATOR
 `define NO_SYNOPSYS_FF 1
@@ -77,6 +79,22 @@
 // __arst_n: asynchronous reset, active-low
 `define FFARN(__q, __d, __reset_value, __clk, __arst_n) \
   `FF(__q, __d, __reset_value, __clk, __arst_n)
+
+// Flip-Flop with asynchronous active-low reset and synchronous clear
+// __q: Q output of FF
+// __d: D input of FF
+// __reset_value: value assigned upon reset
+// __clk: clock input
+// __arst_n: asynchronous reset, active-low
+// __clr: synchronous clear, active high
+`define FFC(__q, __d, __reset_value, __clk, __arst_n, __clr)        \
+  always_ff @(posedge (__clk) or negedge (__arst_n)) begin          \
+    if (!__arst_n) begin                                            \
+      __q <= (__reset_value);                                       \
+    end else begin                                                  \
+      __q <= (__clr) ? (__reset_value) : (__d);                     \
+    end                                                             \
+  end
 
 // Flip-Flop with synchronous active-high reset
 // __q: Q output of FF
