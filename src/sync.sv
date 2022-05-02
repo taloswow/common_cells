@@ -10,12 +10,15 @@
 
 // Antonio Pullini <pullinia@iis.ee.ethz.ch>
 
+`include "common_cells/registers.svh"
+
 module sync #(
     parameter int unsigned STAGES = 2,
     parameter bit ResetValue = 1'b0
 ) (
     input  logic clk_i,
     input  logic rst_ni,
+    input  logic clr_i,
     input  logic serial_i,
     output logic serial_o
 );
@@ -29,6 +32,7 @@ module sync #(
             reg_q <= {reg_q[STAGES-2:0], serial_i};
         end
     end
+    `FFC(req_q, {req_q[STAGES-2:0], serial_i}, {STAGES{ResetValue}}, clk_i, rst_ni, clr_i)
 
     assign serial_o = reg_q[STAGES-1];
 
