@@ -10,11 +10,14 @@
 
 // Up/down counter that tracks its maximum value
 
+`include "common_cells/registers.svh"
+
 module max_counter #(
     parameter int unsigned WIDTH = 4
 ) (
     input  logic             clk_i,
     input  logic             rst_ni,
+    input  logic             clear_regs,    // fence-t-clear for registers
     input  logic             clear_i,       // synchronous clear for counter
     input  logic             clear_max_i,   // synchronous clear for maximum value
     input  logic             en_i,          // enable the counter
@@ -36,6 +39,7 @@ module max_counter #(
     ) i_counter (
         .clk_i,
         .rst_ni,
+	.clr_i       (clear_regs),
         .clear_i,
         .en_i,
         .load_i,
