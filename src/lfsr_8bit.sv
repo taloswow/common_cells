@@ -14,12 +14,16 @@
 // Description: 8-bit LFSR
 
 /// 8 bit Linear Feedback Shift register
+
+`include "common_cells/registers.svh"
+
 module lfsr_8bit #(
   parameter logic        [7:0] SEED  = 8'b0,
   parameter int unsigned       WIDTH = 8
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
+  input  logic                     clr_i,
   input  logic                     en_i,
   output logic [        WIDTH-1:0] refill_way_oh,
   output logic [$clog2(WIDTH)-1:0] refill_way_bin
@@ -44,13 +48,7 @@ module lfsr_8bit #(
     refill_way_bin = shift_q;
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_
-    if (~rst_ni) begin
-      shift_q <= SEED;
-    end else begin
-      shift_q <= shift_d;
-    end
-  end
+  `FFC(shift_q, shift_d, SEED, clk_i, rst_ni, clr_i)
 
   //pragma translate_off
   initial begin
