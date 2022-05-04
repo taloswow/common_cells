@@ -101,6 +101,7 @@ module stream_delay #(
             ) i_lfsr_16bit (
                 .clk_i          ( clk_i        ),
                 .rst_ni         ( rst_ni       ),
+		.clr_i          ( clr_i        ),
                 .en_i           ( load         ),
                 .refill_way_oh  (              ),
                 .refill_way_bin ( counter_load )
