@@ -56,6 +56,7 @@ module id_queue #(
 ) (
     input  logic    clk_i,
     input  logic    rst_ni,
+    input  logic    clr_i,
 
     input  id_t     inp_id_i,
     input  data_t   inp_data_i,
@@ -384,24 +385,10 @@ module id_queue #(
 
     // Registers
     for (genvar i = 0; i < HtCapacity; i++) begin: gen_ht_ffs
-        always_ff @(posedge clk_i, negedge rst_ni) begin
-            if (!rst_ni) begin
-                head_tail_q[i] <= '{free: 1'b1, default: '0};
-            end else begin
-                head_tail_q[i] <= head_tail_d[i];
-            end
-        end
+	`FFC(head_tail_q[i], head_tail_d[i], '{free: 1'b1, default: '0}, clk_i, rst_ni, clr_i)
     end
     for (genvar i = 0; i < CAPACITY; i++) begin: gen_data_ffs
-        always_ff @(posedge clk_i, negedge rst_ni) begin
-            if (!rst_ni) begin
-                // Set free bit of linked data entries, all other bits are don't care.
-                linked_data_q[i]    <= '0;
-                linked_data_q[i][0] <= 1'b1;
-            end else begin
-                linked_data_q[i]    <= linked_data_d[i];
-            end
-        end
+	`FFC(linked_data_q[i], linked_data_d[i], 1, clk_i, rst_ni, clr_i)
     end
 
     // Validate parameters.
