@@ -27,12 +27,14 @@ module cdc_2phase_tb;
   // Signals of the design under test.
   logic        src_rst_ni  = 1;
   logic        src_clk_i   = 0;
+  logic        src_clr_i   = 0;
   logic [31:0] src_data_i  = 0;
   logic        src_valid_i = 0;
   logic        src_ready_o;
 
   logic        dst_rst_ni  = 1;
   logic        dst_clk_i   = 0;
+  logic        dst_clr_i   = 0;
   logic [31:0] dst_data_o;
   logic        dst_valid_o;
   logic        dst_ready_i = 0;
@@ -198,12 +200,14 @@ module cdc_2phase_tb_delay_injector #(
 )(
   input  logic        src_rst_ni,
   input  logic        src_clk_i,
+  input  logic        src_clr_i,
   input  logic [31:0] src_data_i,
   input  logic        src_valid_i,
   output logic        src_ready_o,
 
   input  logic        dst_rst_ni,
   input  logic        dst_clk_i,
+  input  logic        dst_clr_i,
   output logic [31:0] dst_data_o,
   output logic        dst_valid_o,
   input  logic        dst_ready_i
@@ -233,6 +237,7 @@ module cdc_2phase_tb_delay_injector #(
   cdc_2phase_src #(logic [31:0]) i_src (
     .rst_ni       ( src_rst_ni   ),
     .clk_i        ( src_clk_i    ),
+    .clr_i        ( src_clr_i    ),
     .data_i       ( src_data_i   ),
     .valid_i      ( src_valid_i  ),
     .ready_o      ( src_ready_o  ),
@@ -244,6 +249,7 @@ module cdc_2phase_tb_delay_injector #(
   cdc_2phase_dst #(logic [31:0]) i_dst (
     .rst_ni       ( dst_rst_ni   ),
     .clk_i        ( dst_clk_i    ),
+    .clr_i        ( dst_clr_i    ),
     .data_o       ( dst_data_o   ),
     .valid_o      ( dst_valid_o  ),
     .ready_i      ( dst_ready_i  ),

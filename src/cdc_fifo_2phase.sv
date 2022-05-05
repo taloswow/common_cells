@@ -19,6 +19,9 @@
 ///
 /// CONSTRAINT: See the constraints for `cdc_2phase`. An additional maximum
 /// delay path needs to be specified from fifo_data_q to dst_data_o.
+
+`include "common_cells/registers.svh"
+
 module cdc_fifo_2phase #(
   /// The data type of the payload transported by the FIFO.
   parameter type T = logic,
@@ -27,12 +30,14 @@ module cdc_fifo_2phase #(
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
+  input  logic src_clr_i,
   input  T     src_data_i,
   input  logic src_valid_i,
   output logic src_ready_o,
 
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
+  input  logic dst_clr_i,
   output T     dst_data_o,
   output logic dst_valid_o,
   input  logic dst_ready_i
@@ -65,23 +70,13 @@ module cdc_fifo_2phase #(
   assign fifo_rdata = fifo_data_q[fifo_ridx];
 
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : g_word
-    always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-      if (!src_rst_ni)
-        fifo_data_q[i] <= '0;
-      else if (fifo_write && fifo_widx == i)
-        fifo_data_q[i] <= fifo_wdata;
-    end
+   `FFARNC(fifo_data_q[i], fifo_wdata, (fifo_write && fifo_widx == i), src_clr_i, '0, src_clk_i, src_rst_ni)
   end
 
   // Allocate the read and write pointers in the source and destination domain.
   pointer_t src_wptr_q, dst_wptr, src_rptr, dst_rptr_q;
 
-  always_ff @(posedge src_clk_i, negedge src_rst_ni) begin
-    if (!src_rst_ni)
-      src_wptr_q <= 0;
-    else if (src_valid_i && src_ready_o)
-      src_wptr_q <= src_wptr_q + 1;
-  end
+  `FFARNC(src_wptr_q, src_wptr_q + 1, (src_valid_i && src_ready_o), src_clr_i, 0, src_clk_i, src_rst_ni)
 
   always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
     if (!dst_rst_ni)
@@ -89,6 +84,7 @@ module cdc_fifo_2phase #(
     else if (dst_valid_o && dst_ready_i)
       dst_rptr_q <= dst_rptr_q + 1;
   end
+  `FFARNC(dst_rptr_q, dst_rptr_q +1, (dst_valid_o && dst_ready_i), dst_clr_i, 0, dst_clk_i, dst_rst_ni)
 
   // The pointers into the FIFO are one bit wider than the actual address into
   // the FIFO. This makes detecting critical states very simple: if all but the
@@ -101,11 +97,13 @@ module cdc_fifo_2phase #(
   cdc_2phase #( .T(pointer_t) ) i_cdc_wptr (
     .src_rst_ni  ( src_rst_ni ),
     .src_clk_i   ( src_clk_i  ),
+    .src_clr_i   ( src_clr_i  ),
     .src_data_i  ( src_wptr_q ),
     .src_valid_i ( 1'b1       ),
     .src_ready_o (            ),
     .dst_rst_ni  ( dst_rst_ni ),
     .dst_clk_i   ( dst_clk_i  ),
+    .dst_clr_i   ( dst_clr_i  ),
     .dst_data_o  ( dst_wptr   ),
     .dst_valid_o (            ),
     .dst_ready_i ( 1'b1       )
@@ -114,11 +112,13 @@ module cdc_fifo_2phase #(
   cdc_2phase #( .T(pointer_t) ) i_cdc_rptr (
     .src_rst_ni  ( dst_rst_ni ),
     .src_clk_i   ( dst_clk_i  ),
+    .src_clr_i   ( dst_clr_i  ),
     .src_data_i  ( dst_rptr_q ),
     .src_valid_i ( 1'b1       ),
     .src_ready_o (            ),
     .dst_rst_ni  ( src_rst_ni ),
     .dst_clk_i   ( src_clk_i  ),
+    .dst_clr_i   ( src_clr_i  ),
     .dst_data_o  ( src_rptr   ),
     .dst_valid_o (            ),
     .dst_ready_i ( 1'b1       )

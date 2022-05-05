@@ -14,12 +14,14 @@
 module cdc_2phase_synth (
   input  logic        src_rst_ni,
   input  logic        src_clk_i,
+  input  logic        src_clr_i,
   input  logic [31:0] src_data_i,
   input  logic        src_valid_i,
   output logic        src_ready_o,
 
   input  logic        dst_rst_ni,
   input  logic        dst_clk_i,
+  input  logic        dst_clr_i,
   output logic [31:0] dst_data_o,
   output logic        dst_valid_o,
   input  logic        dst_ready_i
