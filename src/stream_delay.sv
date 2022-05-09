@@ -115,6 +115,7 @@ module stream_delay #(
         ) i_counter (
             .clk_i      ( clk_i        ),
             .rst_ni     ( rst_ni       ),
+	    .reg_clear  ( clr_i        ),
             .clear_i    ( 1'b0         ),
             .en_i       ( en           ),
             .load_i     ( load         ),

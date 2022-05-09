@@ -17,7 +17,7 @@ module max_counter #(
 ) (
     input  logic             clk_i,
     input  logic             rst_ni,
-    input  logic             clear_regs,    // fence-t-clear for registers
+    input  logic             reg_clear,     // fence-t-clear for registers
     input  logic             clear_i,       // synchronous clear for counter
     input  logic             clear_max_i,   // synchronous clear for maximum value
     input  logic             en_i,          // enable the counter
@@ -39,7 +39,7 @@ module max_counter #(
     ) i_counter (
         .clk_i,
         .rst_ni,
-	.clr_i       (clear_regs),
+	.reg_clear,
         .clear_i,
         .en_i,
         .load_i,
@@ -68,14 +68,6 @@ module max_counter #(
 
     assign overflow_max_o = overflow_max_q;
 
-    always_ff @(posedge clk_i, negedge rst_ni) begin
-        if (!rst_ni) begin
-           max_q <= '0;
-           overflow_max_q <= 1'b0;
-        end else begin
-           max_q <= max_d;
-           overflow_max_q <= overflow_max_d;
-        end
-    end
-
+    `FFC(max_q, max_d, '0, clk_i, rst_ni, reg_clear)
+    `FFC(overflow_max_q, overflow_max_d, 1'b0, clk_i, rst_ni, reg_clear)
 endmodule

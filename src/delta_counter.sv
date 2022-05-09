@@ -10,12 +10,15 @@
 
 // Up/down counter with variable delta
 
+`include "common_cells/registers.svh"
+
 module delta_counter #(
     parameter int unsigned WIDTH = 4,
     parameter bit STICKY_OVERFLOW = 1'b0
 )(
     input  logic             clk_i,
     input  logic             rst_ni,
+    input  logic             reg_clear,
     input  logic             clear_i, // synchronous clear
     input  logic             en_i,    // enable the counter
     input  logic             load_i,  // load a new value
@@ -28,7 +31,7 @@ module delta_counter #(
     logic [WIDTH:0] counter_q, counter_d;
     if (STICKY_OVERFLOW) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
-        always_ff @(posedge clk_i or negedge rst_ni) overflow_q <= ~rst_ni ? 1'b0 : overflow_d;
+	`FFC(overflow_q, overflow_d, 1'b0, clk_i, rst_ni, reg_clear)
         always_comb begin
             overflow_d = overflow_q;
             if (clear_i || load_i) begin
@@ -71,4 +74,5 @@ module delta_counter #(
            counter_q <= counter_d;
         end
     end
+    `FFC(counter_q, counter_d, '0, clk_i, rst_ni, reg_clear)
 endmodule
