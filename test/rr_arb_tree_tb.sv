@@ -40,6 +40,7 @@ module rr_arb_tree_tb #(
   // clock signal
   logic               clk;
   logic               rst_n;
+  logic               clr_i;
   logic               flush;
   idx_t               rr,       idx;
   logic  [NumInp-1:0] req_inp,  gnt_inp, end_of_sim;
@@ -47,6 +48,7 @@ module rr_arb_tree_tb #(
   logic               req_oup,  gnt_oup;
   data_t              data_oup;
 
+  assign clr_i = 0;
   // clock and rst gen
   clk_rst_gen #(
     .ClkPeriod    ( CyclTime ),
@@ -252,6 +254,7 @@ module rr_arb_tree_tb #(
   ) i_rr_arb_tree_dut (
     .clk_i  ( clk      ),
     .rst_ni ( rst_n    ),
+    .clr_i  ( clr_i    ),
     .flush_i( flush    ),
     .rr_i   ( '0       ),
     .req_i  ( req_inp  ),

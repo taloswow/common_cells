@@ -27,6 +27,7 @@ module rrarbiter #(
 ) (
   input logic                         clk_i,
   input logic                         rst_ni,
+  input logic                         clr_i,
 
   input logic                         flush_i, // clears arbiter state
   input logic                         en_i,    // arbiter enable
@@ -47,6 +48,7 @@ module rrarbiter #(
   i_rr_arb_tree (
     .clk_i   ( clk_i      ),
     .rst_ni  ( rst_ni     ),
+    .clr_i   ( clk_i      ),
     .flush_i ( flush_i    ),
     .rr_i    ( '0         ),
     .req_i   ( req_i      ),

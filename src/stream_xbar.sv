@@ -131,6 +131,7 @@ module stream_xbar #(
     ) i_rr_arb_tree (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i,
       .rr_i    ( rr_i[j]      ),
       .req_i   ( out_valid[j] ),
