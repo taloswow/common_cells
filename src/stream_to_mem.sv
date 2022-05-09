@@ -30,6 +30,8 @@ module stream_to_mem #(
   input  logic      clk_i,
   /// Asynchronous reset, active low
   input  logic      rst_ni,
+  /// Synchronous clear, active high
+  input  logic      clr_i,
   /// Request stream interface, payload
   input  mem_req_t  req_i,
   /// Request stream interface, payload is valid for transfer
@@ -88,6 +90,7 @@ module stream_to_mem #(
     ) i_resp_buf (
       .clk_i,
       .rst_ni,
+      .clr_i,
       .flush_i    ( 1'b0             ),
       .testmode_i ( 1'b0             ),
       .data_i     ( mem_resp_i       ),

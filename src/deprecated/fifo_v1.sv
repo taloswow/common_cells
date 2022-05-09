@@ -20,6 +20,7 @@ module fifo #(
 )(
     input  logic  clk_i,            // Clock
     input  logic  rst_ni,           // Asynchronous reset active low
+    input  logic  clr_i,            // Synchronous clear active high
     input  logic  flush_i,          // flush the queue
     input  logic  testmode_i,       // test_mode to bypass clock gating
     // status flags
@@ -42,6 +43,7 @@ module fifo #(
     ) impl (
         .clk_i       ( clk_i       ),
         .rst_ni      ( rst_ni      ),
+	.clr_i       ( clr_i       ),
         .flush_i     ( flush_i     ),
         .testmode_i  ( testmode_i  ),
         .full_o      ( full_o      ),

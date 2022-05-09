@@ -30,6 +30,7 @@ module fifo_inst_tb #(
 
     logic           clk,
                     flush,
+		    clr,
                     full,
                     empty,
                     push,
@@ -43,6 +44,7 @@ module fifo_inst_tb #(
     int unsigned    n_checks = 0;
 
     assign clk = clk_i;
+    assign clr = 1'b0;
 
     fifo_v3 #(
         .FALL_THROUGH   ( FALL_THROUGH  ),
@@ -51,6 +53,7 @@ module fifo_inst_tb #(
     ) dut (
         .clk_i,
         .rst_ni,
+	.clr_i          ( clr           ),
         .flush_i        ( flush         ),
         .testmode_i     ( 1'b0          ),
         .full_o         ( full          ),
