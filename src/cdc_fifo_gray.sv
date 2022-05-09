@@ -87,12 +87,14 @@ module cdc_fifo_gray #(
 ) (
   input  logic src_rst_ni,
   input  logic src_clk_i,
+  input  logic src_clr_i,
   input  T     src_data_i,
   input  logic src_valid_i,
   output logic src_ready_o,
 
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
+  input  logic dst_clr_i,
   output T     dst_data_o,
   output logic dst_valid_o,
   input  logic dst_ready_i
@@ -152,6 +154,7 @@ module cdc_fifo_gray_src #(
 )(
   input  logic src_rst_ni,
   input  logic src_clk_i,
+  input  logic src_clr_i,
   input  T     src_data_i,
   input  logic src_valid_i,
   output logic src_ready_o,
@@ -210,6 +213,7 @@ module cdc_fifo_gray_dst #(
 )(
   input  logic dst_rst_ni,
   input  logic dst_clk_i,
+  input  logic dst_clr_i,
   output T     dst_data_o,
   output logic dst_valid_o,
   input  logic dst_ready_i,
@@ -227,7 +231,7 @@ module cdc_fifo_gray_dst #(
   logic dst_valid, dst_ready;
   // Data selector and register.
   assign dst_data = async_data_i[rptr_bin[LOG_DEPTH-1:0]];
-
+`
   // Read pointer.
   assign rptr_next = rptr_bin+1;
   gray_to_binary #(PtrWidth) i_rptr_g2b (.A(rptr_q), .Z(rptr_bin));
@@ -258,6 +262,7 @@ module cdc_fifo_gray_dst #(
   ) i_spill_register (
     .clk_i   ( dst_clk_i   ),
     .rst_ni  ( dst_rst_ni  ),
+    .clr_i   ( dst_clr_i   ),
     .valid_i ( dst_valid   ),
     .ready_o ( dst_ready   ),
     .data_i  ( dst_data    ),

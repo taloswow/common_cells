@@ -36,10 +36,12 @@ module stream_omega_net_tb #(
 
   logic              clk;
   logic              rst_n;
+  logic              clr_i;
   logic              flush;
   logic [DutNumInp-1:0] sim_done;
 
   assign flush = 1'b0;
+  assign clr_i = 1'b0;
 
   // clock generator
   clk_rst_gen #(

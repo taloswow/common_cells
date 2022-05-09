@@ -78,12 +78,6 @@ module cdc_fifo_2phase #(
 
   `FFARNC(src_wptr_q, src_wptr_q + 1, (src_valid_i && src_ready_o), src_clr_i, 0, src_clk_i, src_rst_ni)
 
-  always_ff @(posedge dst_clk_i, negedge dst_rst_ni) begin
-    if (!dst_rst_ni)
-      dst_rptr_q <= 0;
-    else if (dst_valid_o && dst_ready_i)
-      dst_rptr_q <= dst_rptr_q + 1;
-  end
   `FFARNC(dst_rptr_q, dst_rptr_q +1, (dst_valid_o && dst_ready_i), dst_clr_i, 0, dst_clk_i, dst_rst_ni)
 
   // The pointers into the FIFO are one bit wider than the actual address into

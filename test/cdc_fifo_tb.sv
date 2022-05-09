@@ -29,12 +29,14 @@ module cdc_fifo_tb;
   // Signals of the design under test.
   logic        src_rst_ni  = 1;
   logic        src_clk_i   = 0;
+  logic        src_clr_i   = 0;
   logic [31:0] src_data_i  = 0;
   logic        src_valid_i = 0;
   logic        src_ready_o;
 
   logic        dst_rst_ni  = 1;
   logic        dst_clk_i   = 0;
+  logic        dst_clr_i   = 0;
   logic [31:0] dst_data_o;
   logic        dst_valid_o;
   logic        dst_ready_i = 0;

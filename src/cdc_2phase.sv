@@ -96,15 +96,6 @@ module cdc_2phase_src #(
   `FFC(data_src_q, data_i, '0, clk_i, rst_ni, clr_i)
 
   // The ack_src and ack registers act as synchronization stages.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ack_src_q <= 0;
-      ack_q     <= 0;
-    end else begin
-      ack_src_q <= async_ack_i;
-      ack_q     <= ack_src_q;
-    end
-  end
   `FFC(ack_src_q, async_ack_i, 0, clk_i, rst_ni, clr_i)
   `FFC(ack_q, ack_src_q, 0, clk_i, rst_ni, clr_i)
 

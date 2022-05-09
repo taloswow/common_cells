@@ -67,12 +67,5 @@ module delta_counter #(
         end
     end
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (!rst_ni) begin
-           counter_q <= '0;
-        end else begin
-           counter_q <= counter_d;
-        end
-    end
     `FFC(counter_q, counter_d, '0, clk_i, rst_ni, reg_clear)
 endmodule
