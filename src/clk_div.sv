@@ -10,6 +10,9 @@
 
 // Author: Florian Zaruba
 // Description: Divides the clock by an integer factor
+
+`include "common_cells/registers.svh"
+
 module clk_div #(
     parameter int unsigned RATIO = 4
 )(
@@ -22,21 +25,25 @@ module clk_div #(
     logic [RATIO-1:0] counter_q;
     logic clk_q;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            clk_q       <= 1'b0;
-            counter_q <= '0;
+    logic clk_in;
+    logic counter_in;
+
+    always_comb begin
+        if (en_i && counter_q == (RATIO[RATIO-1:0] - 1)) begin
+            clk_in = 1'b1;
+	    counter_in = counter_q;
+        end else if (en_1) begin
+	    clk_in = clk_q;
+	    counter_in = counter_q + 1'
         end else begin
-            clk_q <= 1'b0;
-            if (en_i) begin
-                if (counter_q == (RATIO[RATIO-1:0] - 1)) begin
-                    clk_q <= 1'b1;
-                end else begin
-                    counter_q <= counter_q + 1;
-                end
-            end
-        end
+            clk_in = 1'b0;
+	    counter_in = counter_q;
+	end
     end
-    // output assignment - bypass in testmode
+
+    `FFC(clk_q, clk_in, 1'b0, clk_i, rst_ni, clr_i)
+    `FFC(counter_q, counter_in, '0, clk_i, rst_ni, clr_i)
+
+   // output assignment - bypass in testmode
     assign clk_o = testmode_i ? clk_i : clk_q;
 endmodule
