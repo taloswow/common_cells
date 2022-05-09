@@ -12,11 +12,14 @@
 // Description: Deglitches a serial line by taking multiple samples until
 //              asserting the output high/low.
 
+`include "common_cells/registers.svh"
+
 module serial_deglitch #(
     parameter int unsigned SIZE = 4
 )(
     input  logic clk_i,    // clock
     input  logic rst_ni,   // asynchronous reset active low
+    input  logic clr_i,    // synchronous clear active high
     input  logic en_i,     // enable
     input  logic d_i,      // serial data in
     output logic q_o       // filtered data out
@@ -24,20 +27,19 @@ module serial_deglitch #(
     logic [SIZE-1:0] count_q;
     logic q;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-        if (~rst_ni) begin
-            count_q <= '0;
-            q       <= 1'b0;
-        end else begin
-            if (en_i) begin
-                if (d_i == 1'b1 && count_q != SIZE[SIZE-1:0]) begin
-                    count_q <= count_q + 1;
-                end else if (d_i == 1'b0 && count_q != SIZE[SIZE-1:0]) begin
-                    count_q <= count_q - 1;
-                end
-            end
-        end
+    logic [SIZE-1:0] count_in;
+    always_comb begin
+	if (d_i == 1'b1 && count_q != SIZE[SIZE-1:0]) begin
+	    count_in = count_q + 1;
+        end else if (d_i == 1'b1 && count_q != SIZE[SIZE-1:0]) begin
+            count_in = count_q - 1;
+	end else begin
+	    count_in = count_q;
+	end
     end
+
+    `FFC(count_q, count_in, '0, clk_i, rst_ni, clr_i)
+    `FFC(q, q, 1'b0, clk_i, rst_ni, clr_i)
 
     // output process
     always_comb begin
