@@ -231,7 +231,7 @@ module cdc_fifo_gray_dst #(
   logic dst_valid, dst_ready;
   // Data selector and register.
   assign dst_data = async_data_i[rptr_bin[LOG_DEPTH-1:0]];
-`
+
   // Read pointer.
   assign rptr_next = rptr_bin+1;
   gray_to_binary #(PtrWidth) i_rptr_g2b (.A(rptr_q), .Z(rptr_bin));

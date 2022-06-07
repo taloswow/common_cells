@@ -70,15 +70,15 @@ module cdc_fifo_2phase #(
   assign fifo_rdata = fifo_data_q[fifo_ridx];
 
   for (genvar i = 0; i < 2**LOG_DEPTH; i++) begin : g_word
-   `FFARNC(fifo_data_q[i], fifo_wdata, (fifo_write && fifo_widx == i), src_clr_i, '0, src_clk_i, src_rst_ni)
+   `FFLARNC(fifo_data_q[i], fifo_wdata, fifo_write && fifo_widx == i, src_clr_i, '0, src_clk_i, src_rst_ni)
   end
 
   // Allocate the read and write pointers in the source and destination domain.
   pointer_t src_wptr_q, dst_wptr, src_rptr, dst_rptr_q;
 
-  `FFARNC(src_wptr_q, src_wptr_q + 1, (src_valid_i && src_ready_o), src_clr_i, 0, src_clk_i, src_rst_ni)
+  `FFLARNC(src_wptr_q, src_wptr_q + 1, (src_valid_i && src_ready_o), src_clr_i, 0, src_clk_i, src_rst_ni)
 
-  `FFARNC(dst_rptr_q, dst_rptr_q +1, (dst_valid_o && dst_ready_i), dst_clr_i, 0, dst_clk_i, dst_rst_ni)
+  `FFLARNC(dst_rptr_q, dst_rptr_q +1, (dst_valid_o && dst_ready_i), dst_clr_i, 0, dst_clk_i, dst_rst_ni)
 
   // The pointers into the FIFO are one bit wider than the actual address into
   // the FIFO. This makes detecting critical states very simple: if all but the

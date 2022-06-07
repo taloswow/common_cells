@@ -18,6 +18,7 @@ module clk_div #(
 )(
     input  logic clk_i,      // Clock
     input  logic rst_ni,     // Asynchronous reset active low
+    input  logic clr_i,      // Synchronous clear active high
     input  logic testmode_i, // testmode
     input  logic en_i,       // enable clock divider
     output logic clk_o       // divided clock out
@@ -32,9 +33,9 @@ module clk_div #(
         if (en_i && counter_q == (RATIO[RATIO-1:0] - 1)) begin
             clk_in = 1'b1;
 	    counter_in = counter_q;
-        end else if (en_1) begin
+        end else if (en_i) begin
 	    clk_in = clk_q;
-	    counter_in = counter_q + 1'
+	    counter_in = counter_q + 1;
         end else begin
             clk_in = 1'b0;
 	    counter_in = counter_q;
